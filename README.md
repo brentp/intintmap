@@ -11,6 +11,8 @@ Package intintmap is a fast int64 key -> int64 value map.
 It is copied nearly verbatim from
 http://java-performance.info/implementing-world-fastest-java-int-to-int-hash-map/
 
+It interleaves keys and values in the same underlying array to improve locality.
+
 It is 2-4X faster than the builtin map:
 ```
 BenchmarkIntIntMapFill    2000   1080930 ns/op
