@@ -21,6 +21,8 @@ BenchmarkIntIntMapGet     20     96848089 ns/op
 BenchmarkStdMapGet        5      246061427 ns/op
 ```
 
+**note** it currently returns 0 for missing keys. Should probably make Get() return (int, error) so we can
+differentiate (or use math.MinUint32 if that hurts performance).
 
 ## Usage
 
