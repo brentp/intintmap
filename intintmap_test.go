@@ -41,27 +41,32 @@ func TestMap(t *testing.T) {
 }
 
 const MAX = 999999999
-const STEP = 95346
+const STEP = 9534
 
 func fillIntIntMap(m *Map) {
 	var j int64
 	for j = 0; j < MAX; j += STEP {
 		m.Put(j, -j)
-	}
+		for k := j; k < j+16; k++ {
+			m.Put(k, -k)
+		}
 
+	}
 }
 
 func fillStdMap(m map[int64]int64) {
 	var j int64
 	for j = 0; j < MAX; j += STEP {
 		m[j] = -j
+		for k := j; k < j+16; k++ {
+			m[k] = -k
+		}
 	}
 }
 
 func BenchmarkIntIntMapFill(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		m := New(2048, 0.60)
-		fillIntIntMap(m)
 		fillIntIntMap(m)
 	}
 }
@@ -70,19 +75,50 @@ func BenchmarkStdMapFill(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		m := make(map[int64]int64, 2048)
 		fillStdMap(m)
-		fillStdMap(m)
 	}
 }
 
-func BenchmarkIntIntMapGet(b *testing.B) {
+func BenchmarkIntIntMapGet10PercentHitRate(b *testing.B) {
 	var j int64
+	m := New(2048, 0.60)
+	fillIntIntMap(m)
 	for i := 0; i < b.N; i++ {
-		b.StopTimer()
 		sum := int64(0)
-		m := New(2048, 0.60)
-		fillIntIntMap(m)
-		b.StartTimer()
-		for j = 0; j < MAX; j += 100 {
+		for j = 0; j < MAX; j += STEP {
+			for k := j; k < 10; k++ {
+				if v := m.Get(k); v != NO_VALUE {
+					sum += v
+				}
+			}
+		}
+		//log.Println("int int sum:", sum)
+	}
+}
+
+func BenchmarkStdMapGet10PercentHitRate(b *testing.B) {
+	var j int64
+	m := make(map[int64]int64, 2048)
+	fillStdMap(m)
+	for i := 0; i < b.N; i++ {
+		sum := int64(0)
+		for j = 0; j < MAX; j += STEP {
+			for k := j; k < 10; k++ {
+				if v, ok := m[k]; ok {
+					sum += v
+				}
+			}
+		}
+		//log.Println("map sum:", sum)
+	}
+}
+
+func BenchmarkIntIntMapGet100PercentHitRate(b *testing.B) {
+	var j int64
+	m := New(2048, 0.60)
+	fillIntIntMap(m)
+	for i := 0; i < b.N; i++ {
+		sum := int64(0)
+		for j = 0; j < MAX; j += STEP {
 			if v := m.Get(j); v != NO_VALUE {
 				sum += v
 			}
@@ -91,15 +127,13 @@ func BenchmarkIntIntMapGet(b *testing.B) {
 	}
 }
 
-func BenchmarkStdMapGet(b *testing.B) {
+func BenchmarkStdMapGet100PercentHitRate(b *testing.B) {
 	var j int64
+	m := make(map[int64]int64, 2048)
+	fillStdMap(m)
 	for i := 0; i < b.N; i++ {
-		b.StopTimer()
 		sum := int64(0)
-		m := make(map[int64]int64, 2048)
-		fillStdMap(m)
-		b.StartTimer()
-		for j = 0; j < MAX; j += 100 {
+		for j = 0; j < MAX; j += STEP {
 			if v, ok := m[j]; ok {
 				sum += v
 			}

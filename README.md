@@ -13,12 +13,14 @@ http://java-performance.info/implementing-world-fastest-java-int-to-int-hash-map
 
 It interleaves keys and values in the same underlying array to improve locality.
 
-It is 2-4X faster than the builtin map:
+It is 2-5X faster than the builtin map:
 ```
-BenchmarkIntIntMapFill    2000   1080930 ns/op
-BenchmarkStdMapFill       1000   1928913 ns/op
-BenchmarkIntIntMapGet     20     96848089 ns/op
-BenchmarkStdMapGet        5      246061427 ns/op
+BenchmarkIntIntMapFill                 	      10	 158436598 ns/op
+BenchmarkStdMapFill                    	       5	 312135474 ns/op
+BenchmarkIntIntMapGet10PercentHitRate  	    5000	    243108 ns/op
+BenchmarkStdMapGet10PercentHitRate     	    5000	    268927 ns/op
+BenchmarkIntIntMapGet100PercentHitRate 	     500	   2249349 ns/op
+BenchmarkStdMapGet100PercentHitRate    	     100	  10258929 ns/op
 ```
 
 **note** it currently returns 0 for missing keys. Should probably make Get() return (int, error) so we can
