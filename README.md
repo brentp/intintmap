@@ -1,5 +1,7 @@
 Fast int64 -> int64 hash in golang.
 
+[![GoDoc] (https://godoc.org/github.com/brentp/intintmap?status.png)](https://godoc.org/github.com/brentp/intintmap)
+
 # intintmap
 --
     import "github.com/brentp/intintmap"
