@@ -2,6 +2,31 @@ package intintmap
 
 import "testing"
 
+func TestMapSimple(t *testing.T) {
+	m := New(10, 0.99)
+	var i int64
+	for i = 2; i < 20000; i += 2 {
+		m.Put(i, i)
+	}
+	for i = 2; i < 20000; i += 2 {
+		if m.Get(i) != i {
+			t.Errorf("didn't get expected value")
+		}
+		if m.Get(i+1) != NO_VALUE {
+			t.Errorf("didn't get expected NO-VALUE value")
+		}
+	}
+	for i = 2; i < 20000; i += 2 {
+		m.Put(i, 2*i)
+		if m.Get(i) != 2*i {
+			t.Errorf("didn't get expected value")
+		}
+		if m.Get(i+1) != NO_VALUE {
+			t.Errorf("didn't get expected NO-VALUE value")
+		}
+	}
+}
+
 func TestMap(t *testing.T) {
 	m := New(10, 0.6)
 

@@ -79,16 +79,15 @@ func (m *Map) Get(key int64) int64 {
 		return m.data[ptr+1]
 	}
 
-	for {
+	for k != key && k != FREE_KEY {
 		ptr = (ptr + 2) & m.mask2
 		k = m.data[ptr]
-		if k == FREE_KEY {
-			return NO_VALUE
-		}
-		if k == key {
-			return m.data[ptr+1]
-		}
 	}
+
+	if k == FREE_KEY {
+		return NO_VALUE
+	}
+	return m.data[ptr+1]
 }
 
 // Put adds val to the map under the specified key and returns the old value in that key.
