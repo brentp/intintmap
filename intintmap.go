@@ -3,7 +3,9 @@
 // It is copied nearly verbatim from http://java-performance.info/implementing-world-fastest-java-int-to-int-hash-map/
 package intintmap
 
-import "math"
+import (
+	"math"
+)
 
 const INT_PHI = 0x9E3779B9
 const FREE_KEY = 0
@@ -16,16 +18,16 @@ func phiMix(x int64) int64 {
 
 // Map is a map-like data-structure for int64s
 type Map struct {
-	data       []int64
+	data       []int64 // interleaved keys and values
 	fillFactor float64
-	threshold  int
+	threshold  int // we sill resize a map once it reaches this size
+	size       int
 
-	mask  int64
+	mask  int64 // mask to calculate the original position
 	mask2 int64
 
-	hasFreeKey bool
-	freeVal    int64
-	size       int
+	hasFreeKey bool  // do we have 'free' key in the map?
+	freeVal    int64 // value of 'free' key
 }
 
 func nextPowerOf2(x uint32) uint32 {
@@ -51,8 +53,15 @@ func arraySize(exp int, fill float64) int {
 
 // New returns a map initialized with n spaces and uses the stated fillFactor.
 // The map will grow as needed.
-func New(n int, fillFactor float64) *Map {
-	capacity := arraySize(n, fillFactor)
+func New(size int, fillFactor float64) *Map {
+	if fillFactor <= 0 || fillFactor >= 1 {
+		panic("FillFactor must be in (0, 1)")
+	}
+	if size <= 0 {
+		panic("Size must be positive")
+	}
+
+	capacity := arraySize(size, fillFactor)
 	return &Map{
 		data:       make([]int64, 2*capacity),
 		fillFactor: fillFactor,
@@ -64,7 +73,6 @@ func New(n int, fillFactor float64) *Map {
 
 // Get returns the value or NO_VALUE if the key is not found.
 func (m *Map) Get(key int64) int64 {
-
 	if key == FREE_KEY {
 		if m.hasFreeKey {
 			return m.freeVal
@@ -75,19 +83,23 @@ func (m *Map) Get(key int64) int64 {
 	ptr := (phiMix(key) & m.mask) << 1
 	k := m.data[ptr]
 
-	if k == key {
+	if key == FREE_KEY { // end of chain already
+		return NO_VALUE
+	}
+	if k == key { // we check FREE prior to this call
 		return m.data[ptr+1]
 	}
 
-	for k != key && k != FREE_KEY {
+	for {
 		ptr = (ptr + 2) & m.mask2
 		k = m.data[ptr]
+		if k == FREE_KEY {
+			return NO_VALUE
+		}
+		if k == key {
+			return m.data[ptr+1]
+		}
 	}
-
-	if k == FREE_KEY {
-		return NO_VALUE
-	}
-	return m.data[ptr+1]
 }
 
 // Put adds val to the map under the specified key and returns the old value in that key.
@@ -105,16 +117,16 @@ func (m *Map) Put(key int64, val int64) int64 {
 	ptr := (phiMix(key) & m.mask) << 1
 	k := m.data[ptr]
 
-	if k == FREE_KEY { // end of chain
-		m.data[ptr+1] = val
+	if k == FREE_KEY { // end of chain already
 		m.data[ptr] = key
+		m.data[ptr+1] = val
 		if m.size >= m.threshold {
 			m.rehash()
 		} else {
 			m.size += 1
 		}
 		return NO_VALUE
-	} else if k == key {
+	} else if k == key { // we check FREE prior to this call
 		ret := m.data[ptr+1]
 		m.data[ptr+1] = val
 		return ret
@@ -125,8 +137,8 @@ func (m *Map) Put(key int64, val int64) int64 {
 		k = m.data[ptr]
 
 		if k == FREE_KEY {
-			m.data[ptr+1] = val
 			m.data[ptr] = key
+			m.data[ptr+1] = val
 			if m.size >= m.threshold {
 				m.rehash()
 			} else {
@@ -140,6 +152,78 @@ func (m *Map) Put(key int64, val int64) int64 {
 		}
 	}
 
+}
+
+// Del deletes an key and its value, and returns the value or NO_VALUE if the key is not found
+func (m *Map) Del(key int64) int64 {
+	if key == FREE_KEY {
+		if !m.hasFreeKey {
+			return NO_VALUE
+		}
+		m.hasFreeKey = false
+		m.size -= 1
+		return m.freeVal
+	}
+
+	ptr := (phiMix(key) & m.mask) << 1
+	k := m.data[ptr]
+
+	var res int64
+	if k == key {
+		res = m.data[ptr+1]
+		m.shiftKeys(ptr)
+		m.size -= 1
+		return res
+	} else if k == FREE_KEY { // end of chain already
+		return NO_VALUE
+	}
+
+	for {
+		ptr = (ptr + 2) & m.mask2
+		k = m.data[ptr]
+
+		if k == key {
+			res = m.data[ptr+1]
+			m.shiftKeys(ptr)
+			m.size -= 1
+			return res
+		} else if k == FREE_KEY {
+			return NO_VALUE
+		}
+
+	}
+}
+
+func (m *Map) shiftKeys(pos int64) int64 {
+	// Shift entries with the same hash.
+	var last, slot int64
+	var k int64
+	var data = m.data
+	for {
+		last = pos
+		pos = (last + 2) & m.mask2
+		for {
+			k = data[pos]
+			if k == FREE_KEY {
+				data[last] = FREE_KEY
+				return last
+			}
+
+			slot = (phiMix(k) & m.mask) << 1
+			if last <= pos {
+				if last >= slot || slot > pos {
+					break
+				}
+			} else {
+				if last >= slot && slot > pos {
+					break
+				}
+			}
+			pos = (pos + 2) & m.mask2
+		}
+		data[last] = k
+		data[last+1] = data[pos+1]
+	}
 }
 
 func (m *Map) rehash() {
@@ -159,4 +243,8 @@ func (m *Map) rehash() {
 			m.Put(o, data[i+1])
 		}
 	}
+}
+
+func (m *Map) Size() int {
+	return m.size
 }

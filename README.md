@@ -1,9 +1,9 @@
 Fast int64 -> int64 hash in golang.
 
-[![GoDoc] (https://godoc.org/github.com/brentp/intintmap?status.png)](https://godoc.org/github.com/brentp/intintmap)
+[![GoDoc] (https://godoc.org/github.com/brentp/intintmap?status.svg)](https://godoc.org/github.com/brentp/intintmap)
 
 # intintmap
---
+
     import "github.com/brentp/intintmap"
 
 Package intintmap is a fast int64 key -> int64 value map.
@@ -36,6 +36,9 @@ m.Put(int64(123), int64(33))
 
 m.Get(int64(222))
 m.Get(int64(333))
+
+m.Del(int64(222))
+m.Del(int64(333))
 ```
 
 #### type Map
@@ -69,3 +72,8 @@ func (m *Map) Put(key int64, val int64) int64
 ```
 Put adds val to the map under the specified key and returns the old value in
 that key.
+
+```go
+func (m *Map) Del(key int64) int64
+```
+Del deletes an key and its value, and returns the value or NO_VALUE if the key is not found
