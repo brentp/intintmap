@@ -20,7 +20,7 @@ func phiMix(x int64) int64 {
 type Map struct {
 	data       []int64 // interleaved keys and values
 	fillFactor float64
-	threshold  int // we sill resize a map once it reaches this size
+	threshold  int // we will resize a map once it reaches this size
 	size       int
 
 	mask  int64 // mask to calculate the original position
@@ -126,7 +126,7 @@ func (m *Map) Put(key int64, val int64) int64 {
 			m.size += 1
 		}
 		return NO_VALUE
-	} else if k == key { // we check FREE prior to this call
+	} else if k == key { // overwrite existed value
 		ret := m.data[ptr+1]
 		m.data[ptr+1] = val
 		return ret
@@ -154,7 +154,7 @@ func (m *Map) Put(key int64, val int64) int64 {
 
 }
 
-// Del deletes an key and its value, and returns the value or NO_VALUE if the key is not found.
+// Del deletes a key and its value, and returns the value or NO_VALUE if the key is not found.
 func (m *Map) Del(key int64) int64 {
 	if key == FREE_KEY {
 		if !m.hasFreeKey {
@@ -232,25 +232,31 @@ func (m *Map) rehash() {
 	m.mask = int64(newCapacity/2 - 1)
 	m.mask2 = int64(newCapacity - 1)
 
-	data := make([]int64, len(m.data))
+	data := make([]int64, len(m.data)) // copy of original data
 	copy(data, m.data)
 
 	m.data = make([]int64, newCapacity)
+	if m.hasFreeKey {
+		m.size = 1
+	} else {
+		m.size = 0
+	}
 
+	var o int64
 	for i := 0; i < len(data); i += 2 {
-		o := data[i]
+		o = data[i]
 		if o != FREE_KEY {
 			m.Put(o, data[i+1])
 		}
 	}
 }
 
-// Size return size of the map.
+// Size returns size of the map.
 func (m *Map) Size() int {
 	return m.size
 }
 
-// Keys returns a channel for all keys.
+// Keys returns a channel for iterating all keys.
 func (m *Map) Keys() chan int64 {
 	c := make(chan int64, 10)
 	go func() {
@@ -273,7 +279,7 @@ func (m *Map) Keys() chan int64 {
 	return c
 }
 
-// Items returns a channel for all key-value pairs.
+// Items returns a channel for iterating all key-value pairs.
 func (m *Map) Items() chan [2]int64 {
 	c := make(chan [2]int64, 10)
 	go func() {

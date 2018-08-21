@@ -8,6 +8,9 @@ func TestMapSimple(t *testing.T) {
 	m := New(10, 0.99)
 	var i int64
 
+	// --------------------------------------------------------------------
+	// Put() and Get()
+
 	for i = 2; i < 20000; i += 2 {
 		m.Put(i, i)
 	}
@@ -20,7 +23,14 @@ func TestMapSimple(t *testing.T) {
 		}
 	}
 
+	if m.Size() != int(20000/2)-1 {
+		t.Errorf("size (%d) is not right, should be %d", m.Size(), int(20000/2)-1)
+	}
+
+	return
+
 	// --------------------------------------------------------------------
+	// Keys()
 
 	m0 := make(map[int64]int64, 1000)
 	for i = 2; i < 20000; i += 2 {
@@ -42,6 +52,7 @@ func TestMapSimple(t *testing.T) {
 	}
 
 	// --------------------------------------------------------------------
+	// Items()
 
 	m0 = make(map[int64]int64, 1000)
 	for i = 2; i < 20000; i += 2 {
@@ -66,20 +77,7 @@ func TestMapSimple(t *testing.T) {
 	}
 
 	// --------------------------------------------------------------------
-
-	for i = 2; i < 20000; i += 2 {
-		m.Put(i, i*2)
-	}
-	for i = 2; i < 20000; i += 2 {
-		if m.Get(i) != 2*i {
-			t.Errorf("didn't get expected value")
-		}
-		if m.Get(i+1) != NO_VALUE {
-			t.Errorf("didn't get expected NO-VALUE value")
-		}
-	}
-
-	// --------------------------------------------------------------------
+	// Del()
 
 	for i = 2; i < 20000; i += 2 {
 		m.Del(i)
@@ -87,6 +85,21 @@ func TestMapSimple(t *testing.T) {
 	for i = 2; i < 20000; i += 2 {
 		if m.Get(i) != NO_VALUE {
 			t.Errorf("didn't get expected NO-VALUE value")
+		}
+		if m.Get(i+1) != NO_VALUE {
+			t.Errorf("didn't get expected NO-VALUE value")
+		}
+	}
+
+	// --------------------------------------------------------------------
+	// Put() and Get()
+
+	for i = 2; i < 20000; i += 2 {
+		m.Put(i, i*2)
+	}
+	for i = 2; i < 20000; i += 2 {
+		if m.Get(i) != 2*i {
+			t.Errorf("didn't get expected value")
 		}
 		if m.Get(i+1) != NO_VALUE {
 			t.Errorf("didn't get expected NO-VALUE value")

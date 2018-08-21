@@ -10,7 +10,7 @@ Fast int64 -> int64 hash in golang.
 Package intintmap is a fast int64 key -> int64 value map.
 
 It is copied nearly verbatim from
-http://java-performance.info/implementing-world-fastest-java-int-to-int-hash-map/
+http://java-performance.info/implementing-world-fastest-java-int-to-int-hash-map/ .
 
 It interleaves keys and values in the same underlying array to improve locality.
 
@@ -29,7 +29,6 @@ differentiate (or use math.MinUint32 if that hurts performance).
 
 ## Usage
 
-
 ```go
 m := intintmap.New(32768, 0.6)
 m.Put(int64(1234), int64(-222))
@@ -40,6 +39,16 @@ m.Get(int64(333))
 
 m.Del(int64(222))
 m.Del(int64(333))
+
+m.Size()
+
+for k := range m.Keys() {
+    fmt.Printf("key: %d\n", k)
+}
+
+for kv := range m.Items() {
+    fmt.Printf("key: %d, value: %d\n", kv[0], kv[1])
+}
 ```
 
 #### type Map
@@ -74,18 +83,32 @@ func (m *Map) Put(key int64, val int64) int64
 Put adds val to the map under the specified key and returns the old value in
 that key.
 
+#### func (*Map) Del
+
 ```go
 func (m *Map) Del(key int64) int64
 ```
-Del deletes an key and its value, and returns the value or NO_VALUE if the
+Del deletes a key and its value, and returns the value or NO_VALUE if the
 key is not found.
+
+#### func (*Map) Keys
 
 ```go
 func (m *Map) Keys() chan int64
 ```
-Keys returns a channel for all keys.
+Keys returns a channel for iterating all keys.
+
+#### func (*Map) Items
 
 ```go
 func (m *Map) Items() chan [2]int64
 ```
-Items returns a channel for all key-value pairs.
+Items returns a channel for iterating all key-value pairs.
+
+
+#### func (*Map) Size
+
+```go
+func (m *Map) Size() int
+```
+Size returns size of the map.
