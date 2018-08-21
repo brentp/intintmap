@@ -71,47 +71,46 @@ func New(size int, fillFactor float64) *Map {
 	}
 }
 
-// Get returns the value or NO_VALUE if the key is not found.
-func (m *Map) Get(key int64) int64 {
+// Get returns the value if the key is found.
+func (m *Map) Get(key int64) (int64, bool) {
 	if key == FREE_KEY {
 		if m.hasFreeKey {
-			return m.freeVal
+			return m.freeVal, true
 		}
-		return NO_VALUE
+		return NO_VALUE, false
 	}
 
 	ptr := (phiMix(key) & m.mask) << 1
 	k := m.data[ptr]
 
 	if key == FREE_KEY { // end of chain already
-		return NO_VALUE
+		return NO_VALUE, false
 	}
 	if k == key { // we check FREE prior to this call
-		return m.data[ptr+1]
+		return m.data[ptr+1], true
 	}
 
 	for {
 		ptr = (ptr + 2) & m.mask2
 		k = m.data[ptr]
 		if k == FREE_KEY {
-			return NO_VALUE
+			return NO_VALUE, false
 		}
 		if k == key {
-			return m.data[ptr+1]
+			return m.data[ptr+1], true
 		}
 	}
 }
 
-// Put adds val to the map under the specified key and returns the old value in that key.
-func (m *Map) Put(key int64, val int64) int64 {
+// Put adds or updates key with value val.
+func (m *Map) Put(key int64, val int64) {
 	if key == FREE_KEY {
-		ret := m.freeVal
 		if !m.hasFreeKey {
 			m.size += 1
 		}
 		m.hasFreeKey = true
 		m.freeVal = val
-		return ret
+		return
 	}
 
 	ptr := (phiMix(key) & m.mask) << 1
@@ -125,11 +124,10 @@ func (m *Map) Put(key int64, val int64) int64 {
 		} else {
 			m.size += 1
 		}
-		return NO_VALUE
+		return
 	} else if k == key { // overwrite existed value
-		ret := m.data[ptr+1]
 		m.data[ptr+1] = val
-		return ret
+		return
 	}
 
 	for {
@@ -144,38 +142,32 @@ func (m *Map) Put(key int64, val int64) int64 {
 			} else {
 				m.size += 1
 			}
-			return NO_VALUE
+			return
 		} else if k == key {
-			ret := m.data[ptr+1]
 			m.data[ptr+1] = val
-			return ret
+			return
 		}
 	}
 
 }
 
-// Del deletes a key and its value, and returns the value or NO_VALUE if the key is not found.
-func (m *Map) Del(key int64) int64 {
+// Del deletes a key and its value.
+func (m *Map) Del(key int64) {
 	if key == FREE_KEY {
-		if !m.hasFreeKey {
-			return NO_VALUE
-		}
 		m.hasFreeKey = false
 		m.size -= 1
-		return m.freeVal
+		return
 	}
 
 	ptr := (phiMix(key) & m.mask) << 1
 	k := m.data[ptr]
 
-	var res int64
 	if k == key {
-		res = m.data[ptr+1]
 		m.shiftKeys(ptr)
 		m.size -= 1
-		return res
+		return
 	} else if k == FREE_KEY { // end of chain already
-		return NO_VALUE
+		return
 	}
 
 	for {
@@ -183,12 +175,11 @@ func (m *Map) Del(key int64) int64 {
 		k = m.data[ptr]
 
 		if k == key {
-			res = m.data[ptr+1]
 			m.shiftKeys(ptr)
 			m.size -= 1
-			return res
+			return
 		} else if k == FREE_KEY {
-			return NO_VALUE
+			return
 		}
 
 	}
