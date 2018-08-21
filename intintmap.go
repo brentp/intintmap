@@ -7,9 +7,11 @@ import (
 	"math"
 )
 
+// INT_PHI is for scrambling the keys
 const INT_PHI = 0x9E3779B9
+
+// FREE_KEY is the 'free' key
 const FREE_KEY = 0
-const NO_VALUE = 0
 
 func phiMix(x int64) int64 {
 	h := x * INT_PHI
@@ -77,14 +79,14 @@ func (m *Map) Get(key int64) (int64, bool) {
 		if m.hasFreeKey {
 			return m.freeVal, true
 		}
-		return NO_VALUE, false
+		return 0, false
 	}
 
 	ptr := (phiMix(key) & m.mask) << 1
 	k := m.data[ptr]
 
 	if key == FREE_KEY { // end of chain already
-		return NO_VALUE, false
+		return 0, false
 	}
 	if k == key { // we check FREE prior to this call
 		return m.data[ptr+1], true
@@ -94,7 +96,7 @@ func (m *Map) Get(key int64) (int64, bool) {
 		ptr = (ptr + 2) & m.mask2
 		k = m.data[ptr]
 		if k == FREE_KEY {
-			return NO_VALUE, false
+			return 0, false
 		}
 		if k == key {
 			return m.data[ptr+1], true

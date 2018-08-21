@@ -20,7 +20,7 @@ func TestMapSimple(t *testing.T) {
 		if v, ok = m.Get(i); !ok || v != i {
 			t.Errorf("didn't get expected value")
 		}
-		if v, ok = m.Get(i + 1); ok {
+		if _, ok = m.Get(i + 1); ok {
 			t.Errorf("didn't get expected 'not found' flag")
 		}
 	}
@@ -101,7 +101,7 @@ func TestMapSimple(t *testing.T) {
 		if v, ok = m.Get(i); !ok || v != i*2 {
 			t.Errorf("didn't get expected value")
 		}
-		if v, ok = m.Get(i + 1); ok {
+		if _, ok = m.Get(i + 1); ok {
 			t.Errorf("didn't get expected 'not found' flag")
 		}
 	}
