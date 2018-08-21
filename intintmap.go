@@ -154,7 +154,7 @@ func (m *Map) Put(key int64, val int64) int64 {
 
 }
 
-// Del deletes an key and its value, and returns the value or NO_VALUE if the key is not found
+// Del deletes an key and its value, and returns the value or NO_VALUE if the key is not found.
 func (m *Map) Del(key int64) int64 {
 	if key == FREE_KEY {
 		if !m.hasFreeKey {
@@ -245,6 +245,53 @@ func (m *Map) rehash() {
 	}
 }
 
+// Size return size of the map.
 func (m *Map) Size() int {
 	return m.size
+}
+
+// Keys returns a channel for all keys.
+func (m *Map) Keys() chan int64 {
+	c := make(chan int64, 10)
+	go func() {
+		data := m.data
+		var k int64
+
+		for i := 0; i < len(data); i += 2 {
+			k = data[i]
+			if k == FREE_KEY {
+				if m.hasFreeKey {
+					c <- FREE_KEY // value is m.freeVal
+				} else {
+					continue
+				}
+			}
+			c <- k // value is data[i+1]
+		}
+		close(c)
+	}()
+	return c
+}
+
+// Items returns a channel for all key-value pairs.
+func (m *Map) Items() chan [2]int64 {
+	c := make(chan [2]int64, 10)
+	go func() {
+		data := m.data
+		var k int64
+
+		for i := 0; i < len(data); i += 2 {
+			k = data[i]
+			if k == FREE_KEY {
+				if m.hasFreeKey {
+					c <- [2]int64{FREE_KEY, m.freeVal}
+				} else {
+					continue
+				}
+			}
+			c <- [2]int64{k, data[i+1]}
+		}
+		close(c)
+	}()
+	return c
 }

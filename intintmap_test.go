@@ -20,6 +20,53 @@ func TestMapSimple(t *testing.T) {
 		}
 	}
 
+	// --------------------------------------------------------------------
+
+	m0 := make(map[int64]int64, 1000)
+	for i = 2; i < 20000; i += 2 {
+		m0[i] = i
+	}
+	n := len(m0)
+
+	for k := range m.Keys() {
+		m0[k] = -k
+	}
+	if n != len(m0) {
+		t.Errorf("get unexpected more keys")
+	}
+
+	for k, v := range m0 {
+		if k != -v {
+			t.Errorf("didn't get expected changed key")
+		}
+	}
+
+	// --------------------------------------------------------------------
+
+	m0 = make(map[int64]int64, 1000)
+	for i = 2; i < 20000; i += 2 {
+		m0[i] = i
+	}
+	n = len(m0)
+
+	for kv := range m.Items() {
+		m0[kv[0]] = -kv[1]
+		if kv[0] != kv[1] {
+			t.Errorf("didn't get expected key-value pair")
+		}
+	}
+	if n != len(m0) {
+		t.Errorf("get unexpected more keys")
+	}
+
+	for k, v := range m0 {
+		if k != -v {
+			t.Errorf("didn't get expected changed key")
+		}
+	}
+
+	// --------------------------------------------------------------------
+
 	for i = 2; i < 20000; i += 2 {
 		m.Put(i, i*2)
 	}
@@ -31,6 +78,8 @@ func TestMapSimple(t *testing.T) {
 			t.Errorf("didn't get expected NO-VALUE value")
 		}
 	}
+
+	// --------------------------------------------------------------------
 
 	for i = 2; i < 20000; i += 2 {
 		m.Del(i)

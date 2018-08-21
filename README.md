@@ -1,6 +1,7 @@
 Fast int64 -> int64 hash in golang.
 
-[![GoDoc] (https://godoc.org/github.com/brentp/intintmap?status.svg)](https://godoc.org/github.com/brentp/intintmap)
+[![GoDoc](https://godoc.org/github.com/brentp/intintmap?status.svg)](https://godoc.org/github.com/brentp/intintmap)
+[![Go Report Card](https://goreportcard.com/badge/github.com/brentp/intintmap)](https://goreportcard.com/report/github.com/brentp/intintmap)
 
 # intintmap
 
@@ -76,4 +77,15 @@ that key.
 ```go
 func (m *Map) Del(key int64) int64
 ```
-Del deletes an key and its value, and returns the value or NO_VALUE if the key is not found
+Del deletes an key and its value, and returns the value or NO_VALUE if the
+key is not found.
+
+```go
+func (m *Map) Keys() chan int64
+```
+Keys returns a channel for all keys.
+
+```go
+func (m *Map) Items() chan [2]int64
+```
+Items returns a channel for all key-value pairs.
