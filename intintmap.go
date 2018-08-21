@@ -236,7 +236,7 @@ func (m *Map) rehash() {
 	copy(data, m.data)
 
 	m.data = make([]int64, newCapacity)
-	if m.hasFreeKey {
+	if m.hasFreeKey { // reset size
 		m.size = 1
 	} else {
 		m.size = 0

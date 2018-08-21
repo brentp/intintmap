@@ -27,8 +27,6 @@ func TestMapSimple(t *testing.T) {
 		t.Errorf("size (%d) is not right, should be %d", m.Size(), int(20000/2)-1)
 	}
 
-	return
-
 	// --------------------------------------------------------------------
 	// Keys()
 
