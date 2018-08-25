@@ -108,7 +108,7 @@ func (m *Map) Get(key int64) (int64, bool) {
 func (m *Map) Put(key int64, val int64) {
 	if key == FREE_KEY {
 		if !m.hasFreeKey {
-			m.size += 1
+			m.size++
 		}
 		m.hasFreeKey = true
 		m.freeVal = val
@@ -124,7 +124,7 @@ func (m *Map) Put(key int64, val int64) {
 		if m.size >= m.threshold {
 			m.rehash()
 		} else {
-			m.size += 1
+			m.size++
 		}
 		return
 	} else if k == key { // overwrite existed value
@@ -142,7 +142,7 @@ func (m *Map) Put(key int64, val int64) {
 			if m.size >= m.threshold {
 				m.rehash()
 			} else {
-				m.size += 1
+				m.size++
 			}
 			return
 		} else if k == key {
@@ -157,7 +157,7 @@ func (m *Map) Put(key int64, val int64) {
 func (m *Map) Del(key int64) {
 	if key == FREE_KEY {
 		m.hasFreeKey = false
-		m.size -= 1
+		m.size--
 		return
 	}
 
@@ -166,7 +166,7 @@ func (m *Map) Del(key int64) {
 
 	if k == key {
 		m.shiftKeys(ptr)
-		m.size -= 1
+		m.size--
 		return
 	} else if k == FREE_KEY { // end of chain already
 		return
@@ -178,7 +178,7 @@ func (m *Map) Del(key int64) {
 
 		if k == key {
 			m.shiftKeys(ptr)
-			m.size -= 1
+			m.size--
 			return
 		} else if k == FREE_KEY {
 			return
@@ -256,14 +256,14 @@ func (m *Map) Keys() chan int64 {
 		data := m.data
 		var k int64
 
+		if m.hasFreeKey {
+			c <- FREE_KEY // value is m.freeVal
+		}
+
 		for i := 0; i < len(data); i += 2 {
 			k = data[i]
 			if k == FREE_KEY {
-				if m.hasFreeKey {
-					c <- FREE_KEY // value is m.freeVal
-				} else {
-					continue
-				}
+				continue
 			}
 			c <- k // value is data[i+1]
 		}
@@ -279,14 +279,14 @@ func (m *Map) Items() chan [2]int64 {
 		data := m.data
 		var k int64
 
+		if m.hasFreeKey {
+			c <- [2]int64{FREE_KEY, m.freeVal}
+		}
+
 		for i := 0; i < len(data); i += 2 {
 			k = data[i]
 			if k == FREE_KEY {
-				if m.hasFreeKey {
-					c <- [2]int64{FREE_KEY, m.freeVal}
-				} else {
-					continue
-				}
+				continue
 			}
 			c <- [2]int64{k, data[i+1]}
 		}
