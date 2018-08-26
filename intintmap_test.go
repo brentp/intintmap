@@ -13,10 +13,10 @@ func TestMapSimple(t *testing.T) {
 	// --------------------------------------------------------------------
 	// Put() and Get()
 
-	for i = 2; i < 20000; i += 2 {
+	for i = 0; i < 20000; i += 2 {
 		m.Put(i, i)
 	}
-	for i = 2; i < 20000; i += 2 {
+	for i = 0; i < 20000; i += 2 {
 		if v, ok = m.Get(i); !ok || v != i {
 			t.Errorf("didn't get expected value")
 		}
@@ -25,15 +25,15 @@ func TestMapSimple(t *testing.T) {
 		}
 	}
 
-	if m.Size() != int(20000/2)-1 {
-		t.Errorf("size (%d) is not right, should be %d", m.Size(), int(20000/2)-1)
+	if m.Size() != int(20000/2) {
+		t.Errorf("size (%d) is not right, should be %d", m.Size(), int(20000/2))
 	}
 
 	// --------------------------------------------------------------------
 	// Keys()
 
 	m0 := make(map[int64]int64, 1000)
-	for i = 2; i < 20000; i += 2 {
+	for i = 0; i < 20000; i += 2 {
 		m0[i] = i
 	}
 	n := len(m0)
@@ -55,7 +55,7 @@ func TestMapSimple(t *testing.T) {
 	// Items()
 
 	m0 = make(map[int64]int64, 1000)
-	for i = 2; i < 20000; i += 2 {
+	for i = 0; i < 20000; i += 2 {
 		m0[i] = i
 	}
 	n = len(m0)
@@ -79,10 +79,10 @@ func TestMapSimple(t *testing.T) {
 	// --------------------------------------------------------------------
 	// Del()
 
-	for i = 2; i < 20000; i += 2 {
+	for i = 0; i < 20000; i += 2 {
 		m.Del(i)
 	}
-	for i = 2; i < 20000; i += 2 {
+	for i = 0; i < 20000; i += 2 {
 		if _, ok = m.Get(i); ok {
 			t.Errorf("didn't get expected 'not found' flag")
 		}
@@ -94,10 +94,10 @@ func TestMapSimple(t *testing.T) {
 	// --------------------------------------------------------------------
 	// Put() and Get()
 
-	for i = 2; i < 20000; i += 2 {
+	for i = 0; i < 20000; i += 2 {
 		m.Put(i, i*2)
 	}
-	for i = 2; i < 20000; i += 2 {
+	for i = 0; i < 20000; i += 2 {
 		if v, ok = m.Get(i); !ok || v != i*2 {
 			t.Errorf("didn't get expected value")
 		}
