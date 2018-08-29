@@ -83,6 +83,9 @@ func (m *Map) Get(key int64) (int64, bool) {
 	}
 
 	ptr := (phiMix(key) & m.mask) << 1
+	if ptr < 0 || ptr >= int64(len(m.data)) {	// Check to help to compiler to eliminate a bounds check below.
+		return 0, false
+	}
 	k := m.data[ptr]
 
 	if key == FREE_KEY { // end of chain already
