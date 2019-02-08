@@ -33,16 +33,22 @@ type Map struct {
 }
 
 func nextPowerOf2(x uint32) uint32 {
+	if x == math.MaxUint32 {
+		return x
+	}
+
 	if x == 0 {
 		return 1
 	}
+
 	x--
 	x |= x >> 1
 	x |= x >> 2
 	x |= x >> 4
 	x |= x >> 8
 	x |= x >> 16
-	return (x | x>>32) + 1
+
+	return x + 1
 }
 
 func arraySize(exp int, fill float64) int {
@@ -83,12 +89,12 @@ func (m *Map) Get(key int64) (int64, bool) {
 	}
 
 	ptr := (phiMix(key) & m.mask) << 1
-	if ptr < 0 || ptr >= int64(len(m.data)) {	// Check to help to compiler to eliminate a bounds check below.
+	if ptr < 0 || ptr >= int64(len(m.data)) { // Check to help to compiler to eliminate a bounds check below.
 		return 0, false
 	}
 	k := m.data[ptr]
 
-	if key == FREE_KEY { // end of chain already
+	if k == FREE_KEY { // end of chain already
 		return 0, false
 	}
 	if k == key { // we check FREE prior to this call
