@@ -253,3 +253,48 @@ func BenchmarkStdMapGet100PercentHitRate(b *testing.B) {
 		//log.Println("map sum:", sum)
 	}
 }
+
+func BenchmarkStdMapRange(b *testing.B) {
+	var j, v, sum int64
+	m := make(map[int64]int64, 2048)
+	fillStdMap(m)
+	for i := 0; i < b.N; i++ {
+		sum = int64(0)
+		for j, v = range m {
+			sum += j
+			sum += v
+		}
+		//log.Println("map sum:", sum)
+	}
+}
+
+func BenchmarkIntIntMapItems(b *testing.B) {
+	var j, v, sum int64
+	var it [2]int64
+	m := New(2048, 0.60)
+	fillIntIntMap(m)
+	for i := 0; i < b.N; i++ {
+		sum = int64(0)
+		for it = range m.Items() {
+			j, v = it[0], it[1]
+			sum += j
+			sum += v
+		}
+		//log.Println("int int sum:", sum)
+	}
+}
+
+func BenchmarkIntIntMapEach(b *testing.B) {
+	var sum int64
+	m := New(2048, 0.60)
+	fillIntIntMap(m)
+	for i := 0; i < b.N; i++ {
+		//sum = int64(0)
+		m.Each(func(k, v int64) {
+			sum += k
+			sum += v
+		})
+
+	}
+	//log.Println("int int sum:", sum)
+}

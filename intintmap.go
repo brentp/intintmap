@@ -303,3 +303,20 @@ func (m *Map) Items() chan [2]int64 {
 	}()
 	return c
 }
+
+func (m *Map) Each(f func(k, v int64)) {
+	data := m.data
+	var k int64
+
+	if m.hasFreeKey {
+		f(FREE_KEY, m.freeVal)
+	}
+
+	for i := 0; i < len(data); i += 2 {
+		k = data[i]
+		if k == FREE_KEY {
+			continue
+		}
+		f(k, data[i+1])
+	}
+}
