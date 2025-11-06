@@ -1,1 +1,1 @@
-module intintmap
+module github.com/brentp/intintmap
